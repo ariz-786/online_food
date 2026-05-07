@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Food App Pro</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#020617,#0f172a);
+color:white;
+}
+
+/* HEADER */
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(10px);
+}
+
+/* NAV */
+.nav{display:flex;background:#020617;}
+.nav button{
+flex:1;padding:12px;border:none;background:none;color:white;cursor:pointer;
+}
+.nav button.active{background:#f97316;}
+
+/* SECTION */
+.section{display:none;padding:15px;}
+.section.active{display:block;}
+
+/* CARD */
+.card{
+background:rgba(255,255,255,0.05);
+padding:15px;
+border-radius:12px;
+margin-bottom:15px;
+}
+
+/* MENU */
+.menu-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+}
+
+.menu-item{
+background:#111827;
+border-radius:12px;
+overflow:hidden;
+position:relative;
+transition:.3s;
+}
+.menu-item:hover{transform:scale(1.05);}
+
+/* ✅ FIXED IMAGE QUALITY */
+.menu-item img{
+width:100%;
+height:180px;
+object-fit:cover;
+object-position:center;
+}
+
+/* MOBILE */
+@media(max-width:600px){
+.menu-item img{height:140px;}
+}
+
+.badge{
+position:absolute;
+top:10px;
+left:10px;
+background:red;
+padding:5px;
+font-size:12px;
+}
+
+.menu-content{padding:10px;}
+
+.old{text-decoration:line-through;color:gray;}
+.new{color:#22c55e;font-weight:bold;}
+
+button{
+background:#f97316;
+border:none;
+padding:6px 10px;
+border-radius:5px;
+color:white;
+cursor:pointer;
+}
+
+/* LOGIN */
+.login-box{
+max-width:320px;
+margin:100px auto;
+background:rgba(255,255,255,0.05);
+padding:20px;
+border-radius:10px;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:8px 0;
+border:none;
+border-radius:5px;
+}
+
+/* STATUS */
+.status{padding:5px;border-radius:5px;}
+.preparing{background:orange;}
+.delivery{background:blue;}
+.done{background:green;}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage" class="login-box">
+<h2>Login</h2>
+
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="togglePass()">👁 Show</button><br><br>
+<button onclick="login()">Login</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+
+<header>
+<h2>🍔 Food App Pro</h2>
+<div>
+<span id="userName"></span>
+<button onclick="logout()">Logout</button>
+</div>
+</header>
+
+<div class="nav">
+<button onclick="showTab('menu')" class="active">Menu</button>
+<button onclick="showTab('cart')">Cart</button>
+<button onclick="showTab('orders')">Orders</button>
+<button onclick="showTab('profile')">Profile</button>
+</div>
+
+<!-- MENU -->
+<div id="menu" class="section active">
+<div class="card">
+<h3>Menu</h3>
+<div class="menu-grid" id="menuList"></div>
+</div>
+</div>
+
+<!-- CART -->
+<div id="cart" class="section">
+<div class="card">
+<h3>Cart</h3>
+<div id="cartList"></div>
+<h4>Total: ₹<span id="total">0</span></h4>
+
+<select id="payment">
+<option>COD</option>
+<option>UPI</option>
+</select>
+
+<button onclick="placeOrder()">Place Order</button>
+</div>
+</div>
+
+<!-- ORDERS -->
+<div id="orders" class="section">
+<div id="orderList"></div>
+</div>
+
+<!-- PROFILE -->
+<div id="profile" class="section">
+<div class="card">
+<h3>Profile</h3>
+<p>Name: <span id="pname"></span></p>
+<p>Total Orders: <span id="porders">0</span></p>
+</div>
+</div>
+
+</div>
+
+<script>
+
+/* LOGIN (ANY PASSWORD) */
+let currentUser="";
+
+function login(){
+let name=document.getElementById("username").value;
+let pass=document.getElementById("password").value;
+
+if(name=="" || pass==""){
+alert("Enter username & password");
+return;
+}
+
+currentUser=name;
+
+document.getElementById("userName").innerText="👤 "+name;
+document.getElementById("pname").innerText=name;
+
+document.getElementById("loginPage").style.display="none";
+document.getElementById("app").style.display="block";
+}
+
+/* SHOW PASSWORD */
+function togglePass(){
+let p=document.getElementById("password");
+p.type = p.type==="password" ? "text" : "password";
+}
+
+/* LOGOUT */
+function logout(){location.reload();}
+
+/* NAV */
+function showTab(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+
+document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+event.target.classList.add("active");
+}
+
+/* MENU DATA */
+const menu=[
+{name:"Pizza",price:200,discount:20,img:"https://images.unsplash.com/photo-1601924582975?w=500"},
+{name:"Burger",price:120,discount:10,img:"https://images.unsplash.com/photo-1550547660?w=500"},
+{name:"Pasta",price:180,discount:15,img:"https://images.unsplash.com/photo-1608756687?w=500"},
+{name:"Sandwich",price:100,discount:25,img:"https://images.unsplash.com/photo-1550317138?w=500"},
+{name:"Cold Drink",price:60,discount:5,img:"https://images.unsplash.com/photo-1580910051?w=500"},
+{name:"Fries",price:90,discount:10,img:"https://images.unsplash.com/photo-1571091718767?w=500"},
+{name:"Biryani",price:250,discount:30,img:"https://images.unsplash.com/photo-1604908177522?w=500"},
+{name:"Ice Cream",price:80,discount:15,img:"https://images.unsplash.com/photo-1563805042?w=500"},
+{name:"Coffee",price:70,discount:10,img:"https://images.unsplash.com/photo-1509042239860?w=500"}
+];
+
+let cart=[];
+let orders=[];
+
+/* LOAD MENU */
+function loadMenu(){
+let box=document.getElementById("menuList");
+box.innerHTML="";
+
+menu.forEach((m,i)=>{
+let final=m.price-(m.price*m.discount/100);
+
+box.innerHTML+=`
+<div class="menu-item">
+<span class="badge">${m.discount}% OFF</span>
+<img src="${m.img}">
+<div class="menu-content">
+<h4>${m.name}</h4>
+<span class="old">₹${m.price}</span>
+<span class="new"> ₹${final}</span><br><br>
+<button onclick="addCart(${i})">Add</button>
+</div>
+</div>`;
+});
+}
+
+/* CART */
+function addCart(i){
+let m=menu[i];
+let price=m.price-(m.price*m.discount/100);
+cart.push({...m,finalPrice:price});
+renderCart();
+}
+
+function renderCart(){
+let box=document.getElementById("cartList");
+box.innerHTML="";
+let total=0;
+
+cart.forEach((c,i)=>{
+total+=c.finalPrice;
+box.innerHTML+=`${c.name} ₹${c.finalPrice} <button onclick="removeItem(${i})">❌</button><br>`;
+});
+
+document.getElementById("total").innerText=total;
+}
+
+function removeItem(i){
+cart.splice(i,1);
+renderCart();
+}
+
+/* ORDER */
+function placeOrder(){
+if(cart.length==0) return alert("Cart empty");
+
+let payment=document.getElementById("payment").value;
+
+let order={
+items:[...cart],
+status:"Preparing",
+payment
+};
+
+orders.push(order);
+cart=[];
+renderCart();
+renderOrders();
+
+document.getElementById("porders").innerText=orders.length;
+
+setTimeout(()=>{order.status="Out for Delivery";renderOrders();},3000);
+setTimeout(()=>{order.status="Delivered";renderOrders();},6000);
+
+alert("Order Placed!");
+}
+
+function renderOrders(){
+let box=document.getElementById("orderList");
+box.innerHTML="";
+
+orders.forEach(o=>{
+let cls=o.status=="Preparing"?"preparing":o.status=="Delivered"?"done":"delivery";
+
+box.innerHTML+=`
+<div class="card">
+<p>${o.items.map(i=>i.name).join(", ")}</p>
+<p>${o.payment}</p>
+<p class="status ${cls}">${o.status}</p>
+</div>`;
+});
+}
+
+/* INIT */
+loadMenu();
+
+</script>
+
+</body>
+</html>
